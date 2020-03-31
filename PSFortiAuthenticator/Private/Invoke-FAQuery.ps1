@@ -49,6 +49,9 @@ Function Invoke-FAQuery{
           $Method,
           [Parameter(Mandatory=$false)]
           [string]
+		  $Data,
+          [Parameter(Mandatory=$false)]
+          [string]
 		  $APIUser = $global:FAAPIUser,
           [Parameter(Mandatory=$false)]
           [string]
@@ -78,14 +81,48 @@ Function Invoke-FAQuery{
         if(!$APIUser){ Throw "You need to include a user." }
         $AuthString = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $APIUser,$APIKey)))
         $Headers = @{Authorization=("Basic {0}" -f $AuthString)}
-        $BaseUrl = "https://$Server/api/v1/$($Resource)/?format=json&limit=1000"
+        $Limit = 1000
+        if($Method -eq "GET"){
+            $BaseUrl = "https://$Server/api/v1/$($Resource)/?format=json&limit=$Limit"
+        } else {
+            $BaseUrl = "https://$Server/api/v1/$($Resource)/"
+        }
         Write-Verbose $BaseUrl
+        $FinalResults = @()
     }
 	process{
 		try{
-            $Results = Invoke-RestMethod -Uri $BaseUrl -Method $Method -Headers $Headers
-            Write-Verbose $Results
-            Write-Output $Results
+            $Params = @{
+                "Uri"       = $BaseUrl
+                "Method"    = $Method
+                "Headers"   = $Headers
+                "ContentType" = "application/json"
+            }
+            Write-Verbose "Data: $Data"
+            if($Data){ $Params.Add("Body",$Data) }
+
+            Write-Verbose ($Params | Out-String)
+            $Results = Invoke-RestMethod @Params
+            $FinalResults += $Results
+            $i = 0
+
+            while($Results.objects.count -eq $Limit){
+                $i++
+                Write-Verbose "Run $i  $($Results.meta.next)"
+                $BaseUrl = "https://$($Server)$($Results.meta.next)"
+                Write-Verbose "New Url: $BaseUrl"
+                $Params = @{
+                    "Uri"       = $BaseUrl
+                    "Method"    = $Method
+                    "Headers"   = $Headers
+                }
+                if($Data){ $Params.Add("Body",$Data) }
+                $Results = Invoke-RestMethod @Params
+                $FinalResults += $Results
+            }
+
+            Write-Verbose "Final Meta: $($FinalResults.meta)"
+            Write-Output $FinalResults
         }
 		catch{
 			$ErrorMessage = $_.Exception.Message

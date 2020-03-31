@@ -65,8 +65,11 @@ Function Get-FAUser{
 
             $Results = Invoke-FAQuery @Params
             
-            Write-Verbose $Results.meta
-            Write-Output $Results.objects
+            if($Results.objects){
+                Write-Output $Results.objects
+            } else {
+                Write-Output $false
+            }
         }
 		catch{
 			$ErrorMessage = $_.Exception.Message
