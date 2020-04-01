@@ -74,6 +74,7 @@ Function Write-FALog{
             }
             $Message = "[$(Get-Date -Format s)] $($Append)$Message"
             $Message | Out-File -FilePath $Log -Append
+            Write-Output $Message
         }
 		catch{
 			$ErrorMessage = $_.Exception.Message

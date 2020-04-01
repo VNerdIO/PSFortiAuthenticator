@@ -97,7 +97,8 @@ Function New-FAUser{
             $Results = Invoke-FAQuery @Params
             
             if($Results.username){
-                Write-FALog -Message "Successfully added $($Fields.username)"
+                $ResultsJson = $Results | ConvertTo-Json
+                Write-FALog -Message "Successfully added $($Fields.username) - $ResultsJson"
                 Write-Output $Results
             } else {
                 #Write-Verbose $Results
