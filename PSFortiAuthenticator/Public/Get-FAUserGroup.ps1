@@ -7,7 +7,7 @@
 
     .EXAMPLE
     # Get radius, skip the cert check
-    Set-FALocalGroupMembership -Server "fa.domain.com"
+    Get-FALocalGroupMembership -Server "fa.domain.com"
 
     .PARAMETER Server
     The fqdn/ip of the FortiAuthenticator appliance
@@ -35,17 +35,11 @@
     .LINK
     https://docs.fortinet.com/document/fortiauthenticator/6.0.0/rest-api-solution-guide/927310/introduction
 #>
-Function Set-FALocalGroupMembership{
+Function Get-FAUserGroup{
 	[CmdletBinding()]
 	Param([Parameter(Mandatory=$true)]
           [string]
 		  $Server,
-          [Parameter(Mandatory=$true)]
-          [int]
-		  $UserUri,
-          [Parameter(Mandatory=$true)]
-          [string]
-		  $GroupUri,
           [Parameter(Mandatory=$false)]
           [string]
 		  $APIUser = $global:FAAPIUser,
@@ -56,9 +50,8 @@ Function Set-FALocalGroupMembership{
 	begin{
         if(!$APIKey){ Throw "You need to include the secret." }
         if(!$APIUser){ Throw "You need to include a user." }
-        $Resource = "localgroup-memberships"
-        $Method = "POST"
-        $Json = @{"user"="$UserUri";"group"="$GroupUri"} | ConvertTo-Json -Compress
+        $Resource = "usergroups"
+        $Method = "GET"
     }
 	process{
 		try{
@@ -68,7 +61,6 @@ Function Set-FALocalGroupMembership{
                 "Method"    = $Method
                 "APIUser"   = $APIUser
                 "APIKey"    = $APIKey
-                "Data"      = $Json
             }
 
             $Results = Invoke-FAQuery @Params

@@ -44,6 +44,9 @@ Function New-FAUser{
           [hashtable]
 		  $Fields,
           [Parameter(Mandatory=$false)]
+          [hashtable]
+          $RadiusAttributes,
+          [Parameter(Mandatory=$false)]
           [string]
 		  $APIUser = $global:FAAPIUser,
           [Parameter(Mandatory=$false)]

@@ -35,12 +35,12 @@
     .LINK
     https://docs.fortinet.com/document/fortiauthenticator/6.0.0/rest-api-solution-guide/927310/introduction
 #>
-Function Get-FAUser{
+Function Get-FAUserRadiusAttributes{
 	[CmdletBinding()]
 	Param([Parameter(Mandatory=$true)]
           [string]
 		  $Server,
-          [Parameter(Mandatory=$false)]
+          [Parameter(Mandatory=$true)]
           [int]
 		  $UserId,
           [Parameter(Mandatory=$false)]
@@ -53,11 +53,7 @@ Function Get-FAUser{
 	begin{
         if(!$APIKey){ Throw "You need to include the secret." }
         if(!$APIUser){ Throw "You need to include a user." }
-        if($UserId){
-            $Resource = "localusers/$UserId"
-        } else {
-            $Resource = "localusers"
-        }
+        $Resource = "localusers/$UserId/radiusattributes"
         $Method = "GET"
     }
 	process{
@@ -71,11 +67,9 @@ Function Get-FAUser{
             }
 
             $Results = Invoke-FAQuery @Params
-            
-            if($Results.objects){
-                Write-Output $Results.objects
-            } elseif($Results.active) {
-                Write-Output $Results
+            Write-Verbose $Results
+            if($Results.radius_attributes){
+                Write-Output $Results.radius_attributes
             } else {
                 Write-Output $false
             }

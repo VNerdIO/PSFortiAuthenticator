@@ -103,6 +103,7 @@ Function Invoke-FAQuery{
 
             Write-Verbose ($Params | Out-String)
             $Results = Invoke-RestMethod @Params
+            Write-Verbose "Initial Results: $Results"
             $FinalResults += $Results
             $i = 0
 
@@ -125,10 +126,10 @@ Function Invoke-FAQuery{
             Write-Output $FinalResults
         }
 		catch{
-			$ErrorMessage = $_.Exception.Message
+			#$ErrorMessage = $_.Exception.Message
 			$FailedItem = $_.Exception.ItemName
 			
-			Write-Output "$FailedItem - $ErrorMessage"
+			Write-Output "$FailedItem"# - $ErrorMessage"
 			Return $False
 		}
 		finally{}
