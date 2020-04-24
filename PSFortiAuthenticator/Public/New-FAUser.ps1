@@ -44,9 +44,6 @@ Function New-FAUser{
           [hashtable]
 		  $Fields,
           [Parameter(Mandatory=$false)]
-          [hashtable]
-          $RadiusAttributes,
-          [Parameter(Mandatory=$false)]
           [string]
 		  $APIUser = $global:FAAPIUser,
           [Parameter(Mandatory=$false)]
@@ -104,7 +101,7 @@ Function New-FAUser{
                 Write-FALog -Message "Successfully added $($Fields.username) - $ResultsJson"
                 Write-Output $Results
             } else {
-                #Write-Verbose $Results
+                Write-Verbose $Results
                 Write-FALog -Message "Failed to add $($Fields.username): $Results ($Json)" -Level "Error"
                 Write-Output $false
             }
