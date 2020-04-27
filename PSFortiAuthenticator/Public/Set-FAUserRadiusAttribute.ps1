@@ -98,6 +98,7 @@ Function Set-FAUserRadiusAttribute{
                 Write-Output $Results.radius_attributes
                 Write-FALog -Message "Successfully added attributes for $UserId"
             } else {
+                Write-Verbose $Results
                 Write-Output $false
                 Write-FALog -Message "Failed to add attributes ($RadiusAttribute = $RadiusValue) for $UserId ($Results)" -Level Error
             }
