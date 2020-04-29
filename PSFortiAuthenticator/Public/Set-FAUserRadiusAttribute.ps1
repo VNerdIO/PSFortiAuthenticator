@@ -74,8 +74,8 @@ Function Set-FAUserRadiusAttribute{
         $Data = @{}
         $Data.Add("attribute",$RadiusAttribute)
         $Data.Add("attr_val",$RadiusValue)
-        if($Vendor){ $Data.Add("vendor",$RadiusVendor) }
-        if($Owner){ $Data.Add("owner",$RadiusOwner) }
+        if($RadiusVendor){ $Data.Add("vendor",$RadiusVendor) }
+        if($RadiusOwner){ $Data.Add("owner",$RadiusOwner) }
 
         $Json = $Data | ConvertTo-Json -Compress
         Write-Verbose $Json
@@ -93,9 +93,9 @@ Function Set-FAUserRadiusAttribute{
 
             Write-FALog -Message "Starting to add attributes ($RadiusAttribute = $RadiusValue) for $UserId"
             $Results = Invoke-FAQuery @Params
-            Write-Verbose $Results
-            if($Results.radius_attributes){
-                Write-Output $Results.radius_attributes
+
+            if($Results){
+                Write-Output $Results
                 Write-FALog -Message "Successfully added attributes for $UserId"
             } else {
                 Write-Verbose $Results

@@ -59,9 +59,9 @@ Function New-FAUser{
         # Remove empty values
         $Fields.GetEnumerator() | Where-Object {-not $_.Value} | % { $Fields.Remove($_.Name) }
 
-        # Maker sure the mobile/phone numbers are 1-XXXYYYZZZZ
+        # Make sure the mobile/phone numbers are 1-XXXYYYZZZZ
         $Fields['username'] = $Fields['username'].ToLower()
-        if($Fields['mobile_number']){
+        <#if($Fields['mobile_number']){
             $mobile_number = $Fields['mobile_number'] -Replace "\D",""
             if($mobile_number.Length -eq 10){
                 $Fields['mobile_number'] = "1-$mobile_number"
@@ -78,7 +78,7 @@ Function New-FAUser{
                 $phone_number = $phone_number -replace "^1","1-"
                 $Fields['phone_number'] = $phone_number
             }
-        }
+        }#>
     }
 	process{
 		try{

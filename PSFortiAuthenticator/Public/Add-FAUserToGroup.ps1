@@ -33,13 +33,19 @@
     .NOTES
 
     .LINK
-    https://docs.fortinet.com/document/fortiauthenticator/6.0.0/rest-api-solution-guide/927310/introduction
+    https://docs.fortinet.com/document/fortiauthenticator/6.1.0/rest-api-solution-guide/127943/user-groups-usergroups
 #>
-Function Get-FAUserGroup{
+Function Add-FAUserToGroup{
 	[CmdletBinding()]
 	Param([Parameter(Mandatory=$true)]
           [string]
 		  $Server,
+          [Parameter(Mandatory=$true)]
+          [string]
+		  $UserName,
+          [Parameter(Mandatory=$true)]
+          [string]
+		  $GroupName,
           [Parameter(Mandatory=$false)]
           [string]
 		  $APIUser = $global:FAAPIUser,
@@ -51,7 +57,7 @@ Function Get-FAUserGroup{
         if(!$APIKey){ Throw "You need to include the secret." }
         if(!$APIUser){ Throw "You need to include a user." }
         $Resource = "usergroups"
-        $Method = "GET"
+        $Method = "PATCH"
     }
 	process{
 		try{
@@ -62,20 +68,50 @@ Function Get-FAUserGroup{
                 "APIUser"   = $APIUser
                 "APIKey"    = $APIKey
             }
+            $GetParams = @{
+                "Server"    = $Server
+                "APIUser"   = $APIUser
+                "APIKey"    = $APIKey
+            }
+            Write-Verbose $Params | ConvertTo-Json
+            $Group = Get-FAUserGroup @GetParams | where name -eq "$GroupName"
+            $User = Get-FAUser @GetParams | where username -eq "$UserName"
 
-            $Results = Invoke-FAQuery @Params
-            
-            if($Results.objects){
-                Write-Output $Results.objects
+            if($User.resource_uri -AND $Group.resource_uri){
+                $Params.Remove("Resource")
+                $GroupResourceUri = $Group.resource_uri -replace "/api/v1/",""
+                $Params.Add("Resource",$GroupResourceUri)
+                $CurrentGroupUsers = $Group.Users
+                $CurrentGroupUserCount = $Group.Users.Count
+                $UserResource = $User.resource_uri
+                $NewGroupUsers = $CurrentGroupUsers + $UserResource
+
+                if($NewGroupUsers.Count -gt $CurrentGroupUserCount){
+                    Write-Verbose "New Group count ($($NewGroupUsers.Count)) is greater than existing ($CurrentGroupUserCount)"
+                    $NewGroupUsersJson = @{"users"=$NewGroupUsers} | ConvertTo-Json -Compress
+                    $Params.Add("Data",$NewGroupUsersJson)
+                    Write-Verbose $NewGroupUsersJson
+                    $ParamJson = $Params | ConvertTo-Json
+                    Write-Verbose $ParamJson
+
+                    $Results = Invoke-FAQuery @Params
+                    
+                    if($Results){
+                        Write-Output $Results
+                    } else {
+                        Write-Output $false
+                    }
+                } else {
+                    Throw "New Group count ($($NewGroupUsers.Count)) is not greater than existing ($CurrentGroupUserCount)."
+                }
             } else {
-                Write-Output $false
+                Throw "No group by that name - $GroupName or Username $UserName"
             }
         }
 		catch{
 			$ErrorMessage = $_.Exception.Message
-			$FailedItem = $_.Exception.ItemName
 			
-			Write-Output "$FailedItem - $ErrorMessage"
+			Write-Output $ErrorMessage
 			Return $False
 		}
 		finally{}
